@@ -1,0 +1,28 @@
+name: build
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q farmbuild.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.2.1
+      - name: Build
+        working-directory: farmbuild
+        run: gradle build --no-daemon --stacktrace
+      - run: |
+          mkdir out
+          cp farmbuild/build/libs/farmbuild-*.jar out/
+          cp farmbuild/libs/baritone-api-fabric-1.17.0.jar out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: farmbuild-mods
+          path: out/*.jar
